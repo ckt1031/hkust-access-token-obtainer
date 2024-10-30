@@ -1,74 +1,112 @@
-# HKUST Access Token Obtainer
+# Obtaining an HKUST Access Token
 
-Obtaining HKUST app API with tricky way and theory explained.
+This document explains how to obtain an HKUST app API access token using a somewhat unconventional method, along with the underlying theory.
 
-## Theory
+## Disclaimer
 
-In general, HKUST uses CAS system and Microsoft Entra ID for authentication across their whole system. In fact that, we are not abled to reverse Microsoft Entra ID web authentication directly, because those tokens generated through web browsers do not have `offline` scope access, in other words, they cannot be revalidated itself programmatically, ot requires real human to extend their session again through real Microsoft authentication progress, like where you see the Microsoft login website and DUO security.
+This method is for **EDUCATIONAL PURPOSES ONLY**.
 
-However, there is an app developed by Business School, a student project called USThing, which has special access to HKUST internal API where it's Entra ID authentication has `offline` scope, this means they (Me) are abled to revalidate tokens directly without re-authorization on the client by using special token called `refresh_token`.
+Unauthorized access to HKUST resources violates university policy. Use this information responsibly and at your own risk.
 
-Based on general network reverse engineering techniques, by using the access token generated, we can utilise some cool endpoints which are abled to directly manage school stuffs like library and facilities booking.
+> Please CAREFULLY read the HKUST rules and regulations before using this method.
+> The author is not responsible for any consequences resulting from the use of this method.
 
-Aside from that, surprisingly, access token generated below isn't only for USThing API itself, it was actually accessible for all HKUST app APIs, I realized that the Microsoft Entra ID of USThing was actually the one of HKUST official one, that's mean USThing access token is equivalent to HKUST system token, that's mean we can use USThing API token to access more HKUST APIs (w5.ab.ust.hk).
+Violating these rules may result in disciplinary action.
 
-HKUST more likely extraly added USThing Native Client redirect URL and allow offline access scope for their development. This made USThing more easier to develop and use for longevity instead of logging in every few hours, while this opened a gateway for easy reverse engineering and access in non official way.
+1. [Related Laws, Hong Kong](https://itsc.hkust.edu.hk/it-policies-guidelines/related-laws)
+2. [Acceptable Use Policy](https://itsc.hkust.edu.hk/it-policies-guidelines/aup)
+3. [Student Academic Integrity](https://registry.hkust.edu.hk/resource-library/regulations-student-academic-integrity)
 
-In order to understand the entire project, you must be familiar with OAuth, PKCE Challenge, Hashing and Microsoft Entra ID (formerly Active Directory).
+This method can help you access authorized resources, but never use it for unauthorized access. Never access other people's accounts without their permission.
 
-## FAQ on OAuth Security
+**Never share your access token.** It's like your password and must be kept secret. **Never use this method to access others' accounts without permission or use someone else's token for abusive actions, such as booking all library rooms.**
 
-Assume you are aware of PKCE and general OAuth.
+## How It Works
 
-Actually you are undergoing Man-in-the-Middle Attack to intercept the OAuth, but the truth is that PKCE is resilient to MITM Attack or any network interception. Why we can still get all required tokens like code, and refresh token? The answer is the account is yours, PKCE are not abled to project applications from being reversed if the application account is owned by you or accessibile by you, this is the point, simple.
+HKUST utilizes a CAS system and Microsoft Entra ID for authentication across its entire system.  Directly reversing Microsoft Entra ID web authentication isn't feasible because tokens generated through web browsers lack the `offline` scope. This means they cannot be programmatically revalidated and require manual user interaction through the Microsoft login website and DUO security for session extension.
 
-The program in the repository is to act as a real application like USThing. PKCE's code verifier and code challenge are not fixed secret on any platforms, unlike client secret. It has just a random string generated and hashed string on applications that was unabled for network incepters to obtain, but if the login account is yours and you CAN generate yourself to make mocked authorization request and get your own refresh and access token.
+However, a student project from the Business School called USThing has special access to HKUST's internal API.  Its Entra ID authentication *does* have `offline` scope. This allows for token revalidation directly, without client-side re-authorization, using a `refresh_token`.
 
-## Perquisites
+Through reverse engineering, using the generated access token, we can utilize endpoints to manage school resources like library and facility bookings.  Moreover, the access token isn't limited to the USThing API. It's actually valid for *all* HKUST app APIs. This suggests that USThing uses the official HKUST Microsoft Entra ID.  Therefore, a USThing access token is functionally equivalent to a general HKUST system token, granting access to more HKUST APIs (w5.ab.ust.hk).
 
-You need two constants: `TenantID` and `ClientID`.
+HKUST likely added a USThing Native Client redirect URL and enabled the `offline_access` scope for development purposes. This simplified USThing's development and prolonged usability, eliminating frequent logins. However, it also inadvertently created a gateway for unofficial access through reverse engineering.
 
-## PKCE Challenge
+Familiarity with OAuth, PKCE (Proof Key for Code Exchange), hashing, and Microsoft Entra ID (formerly Active Directory) is recommended for a comprehensive understanding of this process.
 
-A random string as `code_verifier` between 64 and 128 characters in length; it is best to store this for future revalidation.  
-`code_challenge`: Base64 encoded SHA-256 hash of `code_verifier`.
+## FAQ: OAuth Security
 
-## Authorization
+Assuming you're familiar with PKCE and OAuth in general, this method resembles a Man-in-the-Middle (MITM) attack. However, PKCE is designed to be resistant to MITM attacks and network interception.  So, how can we still obtain necessary tokens like the authorization code and refresh token?  Because the account used is your own. PKCE protects against unauthorized application access, but it cannot prevent reverse engineering when you control the account.
 
-Create an authorization string:
+The program acts like a legitimate application, similar to USThing.  Unlike client secrets, PKCE's `code_verifier` and `code_challenge` are not fixed. They are randomly generated and hashed within the application, preventing network interceptors from obtaining them.  However, if you own the account, you can generate these values yourself, mock the authorization request, and retrieve your own refresh and access tokens.
 
-```
-BROWSER https://login.microsoftonline.com/{TenantID}/oauth2/v2.0/authorize
-```
+## Prerequisites
 
-With specific queries:
+You will need two constants: `TenantID` and `ClientID`.
+
+## PKCE Challenge Generation
+
+1. **`code_verifier`:** Generate a random string between 64 and 128 characters long.  Store this securely for future token revalidation.
+2. **`code_challenge`:** Calculate the SHA-256 hash of the `code_verifier` and then Base64 encode the result.
+
+## Authorization Request
+
+Construct an authorization URL in your browser:
 
 ```bash
-code_challenge=
+https://login.microsoftonline.com/{TenantID}/oauth2/v2.0/authorize
+```
+
+Append the following query parameters:
+
+```bash
+code_challenge=<your_code_challenge>
 code_challenge_method=S256
 prompt=login
-redirect_uri=
-client_id=
+redirect_uri=<your_redirect_uri>
+client_id=<your_client_id>
 response_type=code
-state= # Random String
+state=<random_string>
 scope=openid%20offline_access
 ```
 
-In the browser, if you are logged in and validated, you will be redirected to a specified URL, and you need to retrieve the `code` query value from your redirection URL.
+After successful login and authentication, your browser will redirect to the specified `redirect_uri`. Extract the `code` parameter from the redirected URL.
 
-## Obtaining Refresh and Access Tokens
+### Obtaining Tokens
 
-```
-POST https://login.microsoftonline.com/{TenantID}/oauth2/v2.0/token
-```
+Make a `POST` request to:
 
 ```bash
-grant_type=authorization_code # switch to refresh_token for renewing access tokens using a refresh token
-client_id=
-code_verifier= # Where your stored random string is
-redirect_uri= 
-code= # Just obtained from the redirection URL; comment this out if grant_type=refresh_token
-# refresh_token= # Uncomment this if grant_type is refresh_token
+https://login.microsoftonline.com/{TenantID}/oauth2/v2.0/token
 ```
 
-First, you will get the refresh token (which should have a very long expiry), and you can revalidate your access token until the "very long validation" ends.
+With the following data:
+
+```bash
+grant_type=authorization_code  // Use "refresh_token" for renewal
+client_id=<your_client_id>
+code_verifier=<your_code_verifier>
+redirect_uri=<your_redirect_uri>
+code=<authorization_code>       // Obtained from redirect; omit for refresh
+// refresh_token=<refresh_token> // Use this when grant_type is refresh_token
+```
+
+Initially, this will return a refresh token (with a long expiry) and an access token. You can use the refresh token to periodically renew the access token until the refresh token itself expires.
+
+## Usage of Demo Python Script
+
+```bash
+pip install -r requirements.txt
+python main.py data.json
+```
+
+Your access token is stored in `data.json`, it expires in 1.5 hour.  You can use the refresh token to renew it.
+
+### Renewing Access Token
+
+```bash
+python renew.py data.json
+```
+
+## References
+
+- [PKCE RFC](https://tools.ietf.org/html/rfc7636)
