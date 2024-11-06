@@ -2,24 +2,7 @@
 
 This document explains how to obtain an HKUST app API access token using a somewhat unconventional method, along with the underlying theory.
 
-## Disclaimer
-
-This method is for **EDUCATIONAL PURPOSES ONLY**.
-
-Unauthorized access to HKUST resources violates university policy. Use this information responsibly and at your own risk.
-
-> Please CAREFULLY read the HKUST rules and regulations before using this method.
-> The author is not responsible for any consequences resulting from the use of this method.
-
-Violating these rules may result in disciplinary action.
-
-1. [Related Laws, Hong Kong](https://itsc.hkust.edu.hk/it-policies-guidelines/related-laws)
-2. [Acceptable Use Policy](https://itsc.hkust.edu.hk/it-policies-guidelines/aup)
-3. [Student Academic Integrity](https://registry.hkust.edu.hk/resource-library/regulations-student-academic-integrity)
-
-This method can help you access authorized resources, but never use it for unauthorized access. Never access other people's accounts without their permission.
-
-**Never share your access token.** It's like your password and must be kept secret. **Never use this method to access others' accounts without permission or use someone else's token for abusive actions, such as booking all library rooms.**
+Please read the [Disclaimer](#disclaimer) before proceeding to avoid any potential and unintended consequences.
 
 ## How It Works
 
@@ -110,3 +93,23 @@ python renew.py data.json
 ## References
 
 - [PKCE RFC](https://tools.ietf.org/html/rfc7636)
+- [Entra ID Auth Code Flow](https://learn.microsoft.com/en-us/entra/identity-platform/v2-oauth2-auth-code-flow)
+
+## Disclaimer
+
+This method is for **EDUCATIONAL PURPOSES ONLY**.
+
+Unauthorized access to HKUST resources violates university policy. Use this information responsibly and at your own risk.
+
+> Please CAREFULLY read the HKUST rules and regulations before using this method.
+> The author is not responsible for any consequences resulting from the use of this method.
+
+Violating these rules may result in disciplinary action.
+
+1. [Related Laws, Hong Kong SAR](https://itsc.hkust.edu.hk/it-policies-guidelines/related-laws)
+2. [Acceptable Use Policy](https://itsc.hkust.edu.hk/it-policies-guidelines/aup)
+3. [Student Academic Integrity](https://registry.hkust.edu.hk/resource-library/regulations-student-academic-integrity)
+
+This method can help you access authorized resources, but never use it for unauthorized access. Never access other people's accounts without their permission.
+
+**Never share your access token.** It's like your password and must be kept secret. **Never use this method to access others' accounts without permission or use someone else's token for abusive actions, such as booking all library rooms.**
